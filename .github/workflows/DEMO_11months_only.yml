@@ -2,6 +2,10 @@ name: DEMO ONLY - 11-month JRA research engine (synthetic records)
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/DEMO_11months_only.yml'
 
 permissions:
   contents: read
