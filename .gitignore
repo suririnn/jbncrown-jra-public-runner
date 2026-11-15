@@ -1,0 +1,16 @@
+# DO NOT COMMIT PRIVATE RACE RECORDS OR RESEARCH OUTPUTS.
+private-data/
+private_data/
+originals/
+raw-odds/
+results/
+.local/
+.demo_outputs/
+*.secret
+*.key
+*.pem
+.env
+.env.*
+__pycache__/
+.pytest_cache/
+.DS_Store
