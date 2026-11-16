@@ -1,0 +1,82 @@
+name: DEMO ONLY - 11-month JRA research engine (synthetic records)
+
+# One-time diagnostic/demo preserved; run manually only.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-monthly-jra-public-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Original code tests (no private data)
+        run: python -m unittest discover -s tests -v
+
+  month:
+    needs: tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      max-parallel: 4
+      fail-fast: false
+      matrix:
+        month: ['01','02','03','04','05','06','07','08','09','10','11']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Create fictitious fixtures, never fetch an actual JRA race
+        run: python examples/create_synthetic.py
+      - name: Calculate synthetic 7-condition x 12-series monthly sufficient statistics
+        run: >-
+          python run_month.py --month ${{ matrix.month }}
+          --input-dir examples/synthetic --output-dir /tmp/month --demo-only
+      - name: Publish synthetic-only, 1-day test fixture artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-2026-${{ matrix.month }}
+          path: /tmp/month/2026-${{ matrix.month }}.json
+          retention-days: 1
+          if-no-files-found: error
+
+  merge:
+    needs: month
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: demo-2026-*
+          path: /tmp/months
+          merge-multiple: true
+      - name: Merge exact numerator and denominator totals across eleven synthetic months
+        run: >-
+          python merge_months.py --input-dir /tmp/months
+          --output /tmp/merged/synthetic_total.json --demo-only
+      - name: Block accidental publication of private source data
+        run: |
+          python - <<'PY'
+          import json
+          j=json.load(open('/tmp/merged/synthetic_total.json',encoding='utf-8'))
+          assert j['source_type']=='synthetic_only'
+          assert j['month_count']==11
+          assert j['races']==11
+          assert j['production_adoptions']==0
+          print('SAFETY_OK; only 11 fictional races; actual Jan-Nov JRA=NOT_COLLECTED')
+          PY
