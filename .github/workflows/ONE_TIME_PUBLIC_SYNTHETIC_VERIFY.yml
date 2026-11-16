@@ -1,10 +1,7 @@
 name: JBN CROWN public synthetic-only calculation verification
 
+# One-time diagnostic/demo preserved; run manually only.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/ONE_TIME_PUBLIC_SYNTHETIC_VERIFY.yml'
   workflow_dispatch:
 
 permissions:
