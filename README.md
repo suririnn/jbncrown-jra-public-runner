@@ -32,7 +32,7 @@ done
 python merge_months.py --input-dir .demo_outputs --output .demo_outputs/merged.json --demo-only
 ```
 
-公開リポジトリの「Actions」から `DEMO ONLY - 11-month ...` を1回手動実行すると、最大4ジョブ同時で11か月分の架空データを独立検査し、その後統合します。**スケジュール自動起動は設定していません。**
+GitHub Actionsでのデモ実行は現在停止中です（YAMLの原本は `.github/workflows-paused/20261116-synthetic-demo/` に保管）。上記のPythonコマンドで11か月分の架空データをローカルで検査・統合できます。**実レースの自動収集は行いません。**
 
 ## 公開リポジトリを使う際の注意（元のprivateリポジトリはそのまま）
 
